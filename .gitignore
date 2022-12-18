@@ -1,7 +1,8 @@
 # Folders
-logs/*.json
+logparser/node_modules
 
 # Files
+logs/*.json
 
 # gitkeep
 !.gitkeep
