@@ -2,7 +2,7 @@
 logparser/node_modules
 
 # Files
-logs/*.json
+logs/*
 
 # gitkeep
 !.gitkeep

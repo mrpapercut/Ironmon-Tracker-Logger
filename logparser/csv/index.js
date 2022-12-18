@@ -36,7 +36,6 @@ const columns = {
 
 (async () => {
     const files = await fs.readdir(logspath);
-    console.log(files);
 
     for (let f of files) {
         if (!f.startsWith('seed') && !f.endsWith('.json')) continue;
@@ -118,7 +117,17 @@ const columns = {
     stringify(csvdata, {
         header: true,
         columns
-    }, (err, data) => {
-        console.log(data);
+    }, async (err, data) => {
+        const d = new Date();
+        const p = s => s.toString().padStart(2, '0');
+        const ts = [
+            d.getUTCFullYear(),
+            p(d.getUTCMonth() + 1),
+            p(d.getUTCDate()),
+            p(d.getHours()),
+            p(d.getMinutes()),
+            p(d.getSeconds())
+        ].join('');
+        await fs.writeFile(path.resolve(logspath, `./seedlogs${ts}.csv`), data, {encoding:'utf8'});
     })
 })();
