@@ -1,0 +1,7 @@
+# Folders
+logs/*.json
+
+# Files
+
+# gitkeep
+!.gitkeep

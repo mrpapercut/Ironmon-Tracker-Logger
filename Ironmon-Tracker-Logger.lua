@@ -67,7 +67,7 @@ end
 function IronmonTrackerLogger.checkExistingData()
 	if Main == nil then return end
 
-	local file = io.open("./parselogger/logs/seed" .. Main.currentSeed .. ".json", "r")
+	local file = io.open("./logs/seed" .. Main.currentSeed .. ".json", "r")
 
 	if file ~= nil then
 		local existingData = file:read()
