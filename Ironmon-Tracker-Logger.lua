@@ -136,7 +136,7 @@ function IronmonTrackerLogger.updateFastInterval()
 end
 
 function IronmonTrackerLogger.logTrackerData()
-	local file = io.open("./parselogger/logs/seed" .. Main.currentSeed .. ".json", "w")
+	local file = io.open("./logs/seed" .. Main.currentSeed .. ".json", "w")
 
 	if file ~= nil then
 		file:write(json.encode(LoggerData))
@@ -232,7 +232,6 @@ function IronmonTrackerLogger.checkNewEncounter()
 			if lastEncounter.ownMon ~= Battle.getViewedPokemon(true).personality
 			or lastEncounter.enemyMon.personality ~= Battle.getViewedPokemon(false).personality then
 				-- Last encounter is not this encounter, add new one
-				-- IronmonTrackerLogger.battleCounter = IronmonTrackerLogger.battleCounter + 1
 				IronmonTrackerLogger.addEncounter()
 			end
 		end
@@ -243,7 +242,7 @@ end
 
 function IronmonTrackerLogger.addEncounter()
 	local newEncounter = {
-		battleID = LoggerData.totalBattles, -- IronmonTrackerLogger.battleCounter,
+		battleID = LoggerData.totalBattles,
 		ownMon = Battle.getViewedPokemon(true).personality,
 		enemyMon = Battle.getViewedPokemon(false),
 		location = RouteData.Info[Battle.CurrentRoute.mapId].name,
@@ -384,40 +383,5 @@ function IronmonTrackerLogger.getHealingItems()
 
 	LoggerData.healingItems = items
 end
-
---[[
-function IronmonTrackerLogger.startLogger()
-	-- Required garbage collection to release old Tracker files after an auto-update
-	collectgarbage()
-
-	print("Loading IronmonTrackerLogger")
-
-	-- Only continue with starting up the Tracker if the 'Main' script was able to be loaded
-	if IronmonTrackerLogger.tryLoad() then
-		-- Then verify the remainder of the Tracker files were able to be setup and initialized
-		if IronmonTrackerLogger.Initialize() then
-			IronmonTrackerLogger.Run()
-		end
-	end
-end
-
-function IronmonTrackerLogger.tryLoad()
-	local mainFilename = "ironmon_logger/Main.lua"
-
-	local file = io.open(mainFilename, "r")
-
-	if file == nil then
-		print('Error starting up the Tracker: Unable to load all of the required Tracker files.')
-		print('> The "Ironmon-Tracker.lua" script file should be in the same folder as the other Tracker files that came with the release download.')
-		return false
-	end
-	io.close(file)
-
-	-- Load the Main Tracker script which will setup all the other files
-	dofile(mainFilename)
-
-	return true
-end
-]]
 
 IronmonTrackerLogger.startLogger()
