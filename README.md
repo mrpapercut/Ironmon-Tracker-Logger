@@ -1,7 +1,7 @@
 # Ironmon Tracker Logger
 A logger for the [Ironmon Tracker](https://github.com/besteon/Ironmon-Tracker).
 
-Warning: not production-ready. Only tested on the GrandPooBear DrCeil patch of FireRed. Support for other versions is unlikely
+Warning: not production-ready. Only tested on the "GrandPooBear" DrSeil-patch of FireRed. Support for other versions is unlikely
 
 ## Usage
 - Start Bizhawk
