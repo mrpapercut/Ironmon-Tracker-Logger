@@ -34,6 +34,41 @@ const columns = {
     lastUsedMoveDamage: 'Last move damage',
 };
 
+const getEnemyChar = lf => {
+    const possibleRivalLocations = [
+        'Oak\'s Lab',
+        'Route 22',
+        'Cerulean City',
+        'S.S. Anne 2F',
+        'Pokémon Tower 2F',
+        'Silph Co. 7F',
+        'Indigo Plateau'
+    ];
+
+    const lastEncounter = lf.encounters[lf.encounters.length - 1];
+    const enemyMon = lastEncounter.enemyMon;
+
+    let enemyChar = '';
+
+    if (lf.rivalID === enemyMon.trainerID && possibleRivalLocations.includes(lastEncounter.location)) {
+        enemyChar = 'Rival';
+    } else if (lastEncounter.isWildEncounter) {
+        enemyChar = 'Wild';
+    } else {
+        const uniqueEncounters = [];
+        lf.encounters.filter(e => e.location === lastEncounter.location && e.isWildEncounter === false)
+        .forEach(e => {
+            if (!uniqueEncounters.includes(e.battleID)) {
+                uniqueEncounters.push(e.battleID);
+            }
+        });
+
+        enemyChar = lastEncounter.location + ' #' + uniqueEncounters.length;
+    }
+
+    return enemyChar;
+}
+
 (async () => {
     const files = await fs.readdir(logspath);
 
@@ -83,22 +118,7 @@ const columns = {
 
             const enemyMon = lastEncounter.enemyMon;
             if (enemyMon) {
-                let enemyChar = '';
-                if (lf.rivalID === enemyMon.trainerID) {
-                    enemyChar = 'Rival';
-                } else if (lastEncounter.isWildEncounter) {
-                    enemyChar = 'Wild';
-                } else {
-                    const uniqueEncounters = [];
-                    lf.encounters.filter(e => e.location === lastEncounter.location && e.isWildEncounter === false)
-                    .forEach(e => {
-                        if (!uniqueEncounters.includes(e.battleID)) {
-                            uniqueEncounters.push(e.battleID);
-                        }
-                    });
-
-                    enemyChar = lastEncounter.location + ' #' + uniqueEncounters.length;
-                }
+                const enemyChar = getEnemyChar(lf);
 
                 csvRow.enemy = enemyChar;
                 csvRow.enemyMon = enemyMon.name || '';
