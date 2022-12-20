@@ -34,7 +34,31 @@ function IronmonTrackerLogger.startLogger()
 		return false
 	end
 
-	IronmonTrackerLogger.Run()
+	IronmonTrackerLogger.Initialize()
+end
+
+function IronmonTrackerLogger.Initialize()
+	LoggerData = {
+		currentSeed = Main.currentSeed,
+		ballChosen = 0,
+		totalNumberSteps = 0,
+		totalBattles = 0,
+		totalWildBattles = 0,
+		badgesEarned = {},
+		currentMon = nil, -- Current lead mon
+		starterMon = nil, -- Mon you started with
+		evolutionMon = nil, -- Mon you evolved into
+		pivotMon = nil, -- Mon you pivoted to
+		trainerID = 0,
+		rivalID = 0,
+		enemyMon = nil,
+		encounters = {},
+		healingItems = {}
+	}
+
+	IronmonTrackerLogger.checkExistingData()
+
+	IronmonTrackerLogger.Run();
 end
 
 function IronmonTrackerLogger.Run()
@@ -43,14 +67,16 @@ function IronmonTrackerLogger.Run()
 	local slowInterval = 3 * 60
 	local i = 0
 
-	IronmonTrackerLogger.checkExistingData()
-
 	while true do
 		i = i + 1
 
+		if LoggerData.currentSeed ~= Main.currentSeed then
+			print("Seed changed, reinitializing logger...")
+			return IronmonTrackerLogger.Initialize()
+		end
+
 		if IronmonTrackerLogger.gameReadyForTracking() then
 			if (i % slowInterval) == 0 then
-				print("---")
 				IronmonTrackerLogger.updateSlowInterval()
 				i = 0
 			end
@@ -103,13 +129,13 @@ end
 
 function IronmonTrackerLogger.updateSlowInterval()
 	LoggerData.currentSeed = Main.currentSeed
-	LoggerData.totalBattles = Utils.getGameStat(Constants.GAME_STATS.TOTAL_BATTLES)
-	LoggerData.totalWildBattles = Utils.getGameStat(Constants.GAME_STATS.WILD_BATTLES)
 	LoggerData.totalNumberSteps = Program.Pedometer.totalSteps
 
 	IronmonTrackerLogger.getHealingItems()
 
 	IronmonTrackerLogger.getChosenBall()
+
+	IronmonTrackerLogger.checkBarbCatch()
 
 	if LoggerData.starterMon == nil then
 		IronmonTrackerLogger.getStarterMon()
@@ -122,6 +148,9 @@ function IronmonTrackerLogger.updateSlowInterval()
 end
 
 function IronmonTrackerLogger.updateFastInterval()
+	LoggerData.totalBattles = Utils.getGameStat(Constants.GAME_STATS.TOTAL_BATTLES)
+	LoggerData.totalWildBattles = Utils.getGameStat(Constants.GAME_STATS.WILD_BATTLES)
+
 	-- Update own mon
 	IronmonTrackerLogger.checkStarterForUpdates()
 
@@ -162,6 +191,17 @@ function IronmonTrackerLogger.getChosenBall()
 	-- TODO implement getting chosen ball
 	-- either find a way to read that directly, or get starters and see which one is starterMon
 	LoggerData.ballChosen = 0
+end
+
+function IronmonTrackerLogger.checkBarbCatch()
+	if Program.hasCompletedTutorial == true then return end
+
+	-- TODO: this flag doesn't seem to work in the tracker
+	if Program.inCatchingTutorial == true then
+		local lastBattleStatus = Memory.readbyte(GameSettings.gBattleOutcome)
+
+		-- print(lastBattleStatus)
+	end
 end
 
 function IronmonTrackerLogger.getStarterMon()
@@ -272,10 +312,20 @@ function IronmonTrackerLogger.updateEncounter()
 	local lastUsedMove = IronmonTrackerLogger.getLastMoveByAttacker()
 	local lastUsedMoveDamage = Battle.damageReceived
 
+	-- Correct battleID (is necessary?)
+	if LoggerData.encounters[lastEncounterIndex].battleID ~= LoggerData.totalBattles then
+		LoggerData.encounters[lastEncounterIndex].battleID = LoggerData.totalBattles
+	end
+
 	LoggerData.encounters[lastEncounterIndex].battleTurn = battleTurn
 	if lastUsedMove ~= nil then
 		LoggerData.encounters[lastEncounterIndex].lastUsedMove = lastUsedMove
 	end
+
+	-- TODO: Check if lastUsedMove is PerishSong
+	-- If so, check if abilities contain Soundproof
+	-- If no soundproof, set status to PerishSong, and log current BattleTurn.
+	-- If on logged BattleTurn + 3, lastUsedMoveDamage < currentMon.curHP, player dies because of PerishSong
 
 	if lastUsedMoveDamage ~= nil then
 		LoggerData.encounters[lastEncounterIndex].lastUsedMoveDamage = lastUsedMoveDamage
