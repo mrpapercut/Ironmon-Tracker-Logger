@@ -6,12 +6,7 @@ LoggerData = {
 	totalNumberSteps = 0,
 	totalBattles = 0,
 	totalWildBattles = 0,
-	badgesEarned = {
-		-- {
-		-- 	badgeName = "",
-		-- 	pokemonLevel = 0
-		-- }
-	},
+	badgesEarned = {},
 	currentMon = nil, -- Current lead mon
 	starterMon = nil, -- Mon you started with
 	evolutionMon = nil, -- Mon you evolved into
@@ -77,6 +72,7 @@ function IronmonTrackerLogger.Run()
 
 		if IronmonTrackerLogger.gameReadyForTracking() then
 			if (i % slowInterval) == 0 then
+				print("---")
 				IronmonTrackerLogger.updateSlowInterval()
 				i = 0
 			end
@@ -136,6 +132,8 @@ function IronmonTrackerLogger.updateSlowInterval()
 	IronmonTrackerLogger.getChosenBall()
 
 	IronmonTrackerLogger.checkBarbCatch()
+
+	IronmonTrackerLogger.getBadges()
 
 	if LoggerData.starterMon == nil then
 		IronmonTrackerLogger.getStarterMon()
@@ -202,6 +200,26 @@ function IronmonTrackerLogger.checkBarbCatch()
 
 		-- print(lastBattleStatus)
 	end
+end
+
+function IronmonTrackerLogger.getBadges()
+	local badgeBits = nil
+	local saveblock1Addr = Utils.getSaveBlock1Addr()
+	if GameSettings.game == 3 then -- FireRed/LeafGreen
+		badgeBits = Memory.readbyte(saveblock1Addr + GameSettings.badgeOffset)
+	end
+
+	local badges = {}
+
+	if badgeBits ~= nil then
+		for index = 1, 8, 1 do
+			local badgeName = "badge" .. index
+			local badgeState = Utils.getbits(badgeBits, index - 1, 1)
+			badges[badgeName] = badgeState
+		end
+	end
+
+	LoggerData.badgesEarned = badges
 end
 
 function IronmonTrackerLogger.getStarterMon()
