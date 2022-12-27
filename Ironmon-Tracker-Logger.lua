@@ -209,17 +209,18 @@ function IronmonTrackerLogger.getBadges()
 		badgeBits = Memory.readbyte(saveblock1Addr + GameSettings.badgeOffset)
 	end
 
-	local badges = {}
-
 	if badgeBits ~= nil then
 		for index = 1, 8, 1 do
 			local badgeName = "badge" .. index
 			local badgeState = Utils.getbits(badgeBits, index - 1, 1)
-			badges[badgeName] = badgeState
+			if badgeState == 1 and LoggerData.badgesEarned[badgeName] == nil then
+				LoggerData.badgesEarned[badgeName] = {
+					won = badgeState,
+					monLevel = LoggerData.currentMon.level
+				}
+			end
 		end
 	end
-
-	LoggerData.badgesEarned = badges
 end
 
 function IronmonTrackerLogger.getStarterMon()
